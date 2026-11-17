@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090909">
+<title>KHAYITOV FOOTBALL</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">K</div>
+    <div>
+      <h2>KHAYITOV</h2>
+      <small>FOOTBALL PREMIUM</small>
+    </div>
+  </div>
+  <div class="profile">👤</div>
+</header>
+
+<main>
+  <section class="welcome">
+    <span class="gold">WELCOME TO PREMIUM</span>
+    <h1>FUTBOL OLAMI<br><span>SENING QO‘LINGDA</span></h1>
+    <p>Eng so‘nggi futbol yangiliklari va natijalar.</p>
+  </section>
+
+  <section class="live">
+    <div class="section-title">
+      <h3>🔴 LIVE MATCHES</h3>
+      <span>JONLI</span>
+    </div>
+    <div id="matches" class="match-card">
+      <p>⚽ Uchrashuvlar yuklanmoqda...</p>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="feature" onclick="openPage('news')">
+      <span>📰</span><h3>Yangiliklar</h3>
+      <p>So‘nggi xabarlar</p>
+    </div>
+    <div class="feature" onclick="openPage('scores')">
+      <span>⚽</span><h3>Natijalar</h3>
+      <p>O‘yin hisoblari</p>
+    </div>
+    <div class="feature" onclick="openPage('table')">
+      <span>🏆</span><h3>Turnirlar</h3>
+      <p>Ligalar jadvali</p>
+    </div>
+    <div class="feature" onclick="openPage('quiz')">
+      <span>🧠</span><h3>Viktorina</h3>
+      <p>Bilimingni sinab ko‘r</p>
+    </div>
+  </section>
+
+  <section class="bottom-banner">
+    <span>✦ KHAYITOV PREMIUM ✦</span>
+    <h2>FOOTBALL IS MORE<br>THAN A GAME.</h2>
+  </section>
+</main>
+
+<nav class="navbar">
+  <button onclick="openPage('home')">🏠<small>Bosh sahifa</small></button>
+  <button onclick="openPage('scores')">⚽<small>Natijalar</small></button>
+  <button onclick="openPage('news')">📰<small>Yangiliklar</small></button>
+  <button onclick="openPage('profile')">👤<small>Profil</small></button>
+</nav>
+
+<script src="js/app.js"></script>
+</body>
+</html>
