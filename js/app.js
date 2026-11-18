@@ -8,6 +8,65 @@ if (tg) {
 }
 
 const app = document.getElementById("app");
+const LIVE_API = "https://khayitov-live-api.onrender.com/api/live";
+let liveRefreshTimer = null;
+
+async function refreshLiveMatches(targetId, limit = 0) {
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    try {
+        const response = await fetch(LIVE_API, { cache: "no-store" });
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        const matches = (data.matches || []).slice(0, limit || undefined);
+
+        if (!matches.length) {
+            target.innerHTML = "⚽ Hozircha jonli uchrashuvlar yo‘q.";
+            return;
+        }
+
+        target.innerHTML = matches.map(m => `
+          <div style="background:#151515;border:1px solid #333;border-radius:13px;padding:14px;margin:10px 0;">
+            <div style="font-size:11px;color:#d6b15e;text-align:center;margin-bottom:12px;">
+              ${escapeHTML(m.country || "")} · ${escapeHTML(m.league || "")}
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="flex:1;text-align:center;">
+                <img src="${escapeHTML(m.home_logo || "")}" style="width:38px;height:38px;object-fit:contain;" onerror="this.style.display='none'">
+                <div style="font-size:12px;margin-top:6px;">${escapeHTML(m.home || "")}</div>
+              </div>
+              <div style="min-width:75px;text-align:center;">
+                <div style="font-size:24px;font-weight:bold;color:#fff;">
+                  ${m.home_score ?? 0} - ${m.away_score ?? 0}
+                </div>
+                <div style="font-size:11px;color:#d6b15e;margin-top:4px;">
+                  🔴 ${escapeHTML(m.minute == null ? m.status : m.minute + "′")}
+                </div>
+              </div>
+              <div style="flex:1;text-align:center;">
+                <img src="${escapeHTML(m.away_logo || "")}" style="width:38px;height:38px;object-fit:contain;" onerror="this.style.display='none'">
+                <div style="font-size:12px;margin-top:6px;">${escapeHTML(m.away || "")}</div>
+              </div>
+            </div>
+            <div style="text-align:center;color:#999;font-size:11px;margin-top:10px;">
+              ${escapeHTML(m.status || "Jonli")}
+            </div>
+          </div>
+        `).join("");
+    } catch (error) {
+        target.innerHTML = "⚠️ O‘yinlarni yuklab bo‘lmadi. Qayta urinib ko‘ring.";
+    }
+}
+
+function startLiveRefresh(targetId, limit = 0) {
+    if (liveRefreshTimer) clearInterval(liveRefreshTimer);
+    refreshLiveMatches(targetId, limit);
+    liveRefreshTimer = setInterval(
+        () => refreshLiveMatches(targetId, limit), 30000
+    );
+}
 
 const questions = [
     {q:"2022-yil Jahon chempioni qaysi terma jamoa?",a:["Fransiya","Argentina","Braziliya","Germaniya"],c:1},
@@ -83,34 +142,13 @@ function openPage(page) {
 
     if (page === "live") {
         content = `
-        <div class="match-card live-player-card">
+        <div class="match-card">
           <div class="section-title">
             <h3>🔴 KHAYITOV LIVE</h3>
-            <span>JONLI TV</span>
+            <span>JONLI</span>
           </div>
-
-          <h3 id="liveChannelName">📺 UZMEDIA TV</h3>
-
-          <iframe id="liveFrame"
-            src="https://uz-media.uz/tv"
-            style="width:100%;height:420px;background:#000;border:0;border-radius:12px;"
-            allow="autoplay; fullscreen"
-            allowfullscreen>
-          </iframe>
-
-          <p id="liveStatus">UZMEDIA TV yuklanmoqda...</p>
-
-          <a id="liveExternalLink"
-            href="https://uz-media.uz/tv"
-            target="_blank" rel="noopener"
-            style="display:block;text-align:center;padding:14px;background:#d6b15e;color:#090909;border-radius:10px;text-decoration:none;font-weight:bold;">
-            ▶️ UZMEDIA TV ni alohida ochish
-          </a>
-
-          <p style="font-size:11px;color:#999;margin-top:12px;">
-            Efir mavjudligi kanal provayderiga bog‘liq.
-          </p>
-
+          <p style="color:#aaa;margin:10px 0;">Jonli uchrashuvlar avtomatik yangilanadi.</p>
+          <div id="liveMatches">⚽ O‘yinlar yuklanmoqda...</div>
           <button class="gold-btn" onclick="openPage('home')">🏠 Bosh sahifa</button>
         </div>`;
     }
