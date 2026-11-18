@@ -60,6 +60,7 @@ function home() {
 }
 
 function openPage(page) {
+    console.log("KHAYITOV sahifa:", page);
     if (page === "home") return home();
 
     const pages = {
@@ -255,3 +256,10 @@ function playLive() {
         .catch(() => status.textContent =
             "⚠️ Video ochilmadi. Havola MP4 yoki pleer qo‘llaydigan formatda bo‘lishi kerak.");
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const liveButton = document.getElementById("liveNavBtn");
+    if (liveButton) {
+        liveButton.addEventListener("click", () => openPage("live"));
+    }
+});
