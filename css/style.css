@@ -295,3 +295,55 @@ main {
 .quiz-option:active {
     transform:scale(.98);
 }
+
+/* KHAYITOV LIVE */
+.live-player-card {
+    background: #151515;
+    border: 1px solid #5c4925;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 15px 0;
+}
+
+.live-player-card .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.live-player-card .section-title h3 {
+    color: #f4d58b;
+}
+
+.live-player-card .section-title span {
+    color: #e4bd61;
+    font-size: 11px;
+}
+
+#liveStatus {
+    color: #f4d58b;
+    margin: 12px 0;
+    font-size: 13px;
+}
+
+#liveUrl {
+    width: 100%;
+    margin: 10px 0;
+    padding: 14px;
+    border-radius: 10px;
+    background: #222;
+    color: white;
+    border: 1px solid #66532f;
+}
+
+.live-player-card .gold-btn {
+    width: 100%;
+    margin: 8px 0;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #d6b15e, #f4d58b);
+    color: #090909;
+    font-weight: bold;
+}

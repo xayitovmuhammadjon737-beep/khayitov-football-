@@ -65,6 +65,7 @@ function openPage(page) {
     const pages = {
         news: ["📰", "Futbol yangiliklari", "Yangiliklar bo‘limi"],
         scores: ["⚽", "Futbol natijalari", "Uchrashuvlar bo‘limi"],
+        live: ["🔴", "KHAYITOV LIVE", "Jonli futbol translyatsiyasi"],
         table: ["🏆", "Turnirlar jadvali", "Ligalar bo‘limi"],
         profile: ["👤", "Mening profilim", "Foydalanuvchi profili"]
     };
@@ -78,6 +79,28 @@ function openPage(page) {
     if (!p) return;
 
     let content = "";
+
+    if (page === "live") {
+        content = `
+        <div class="match-card live-player-card">
+          <div class="section-title">
+            <h3>🔴 KHAYITOV LIVE</h3>
+            <span>VIDEO PLEER</span>
+          </div>
+          <video id="liveVideo" controls playsinline
+            style="width:100%;background:#000;border-radius:12px;aspect-ratio:16/9;">
+          </video>
+          <p id="liveStatus">Translyatsiya havolasini kiriting.</p>
+          <input id="liveUrl" type="url"
+            placeholder="https://... video havolasi"
+            style="width:100%;padding:14px;border-radius:10px;background:#222;color:white;border:1px solid #66532f;">
+          <button class="gold-btn" onclick="playLive()">▶️ Efirni boshlash</button>
+          <p style="font-size:11px;color:#999;">
+            Faqat rasmiy yoki foydalanishga ruxsat berilgan video havolalaridan foydalaning.
+          </p>
+          <button class="gold-btn" onclick="openPage('home')">🏠 Bosh sahifa</button>
+        </div>`;
+    }
 
     if (page === "news") {
         content = `
@@ -210,3 +233,25 @@ function escapeHTML(value) {
 }
 
 home();
+
+
+function playLive() {
+    const input = document.getElementById("liveUrl");
+    const video = document.getElementById("liveVideo");
+    const status = document.getElementById("liveStatus");
+
+    if (!input || !video || !status) return;
+
+    const url = input.value.trim();
+
+    if (!/^https?:\/\//i.test(url)) {
+        status.textContent = "⚠️ To‘g‘ri video havolasini kiriting.";
+        return;
+    }
+
+    video.src = url;
+    video.play()
+        .then(() => status.textContent = "🔴 Translyatsiya boshlandi.")
+        .catch(() => status.textContent =
+            "⚠️ Video ochilmadi. Havola MP4 yoki pleer qo‘llaydigan formatda bo‘lishi kerak.");
+}
