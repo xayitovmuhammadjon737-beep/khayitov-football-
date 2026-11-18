@@ -116,9 +116,11 @@ function home() {
       <span>✦ KHAYITOV PREMIUM ✦</span>
       <h2>FOOTBALL IS MORE<br>THAN A GAME.</h2>
     </section>`;
+    startLiveRefresh("matches", 3);
 }
 
 function openPage(page) {
+    if (liveRefreshTimer) clearInterval(liveRefreshTimer);
     console.log("KHAYITOV sahifa:", page);
     if (page === "home") return home();
 
@@ -204,6 +206,7 @@ function openPage(page) {
         <h2>${p[1]}</h2>
       </div>
       ${content}`;
+    if (page === "live") startLiveRefresh("liveMatches");
 }
 
 function startQuiz() {
