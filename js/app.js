@@ -86,19 +86,31 @@ function openPage(page) {
         <div class="match-card live-player-card">
           <div class="section-title">
             <h3>🔴 KHAYITOV LIVE</h3>
-            <span>VIDEO PLEER</span>
+            <span>JONLI TV</span>
           </div>
-          <video id="liveVideo" controls playsinline
-            style="width:100%;background:#000;border-radius:12px;aspect-ratio:16/9;">
-          </video>
-          <p id="liveStatus">Translyatsiya havolasini kiriting.</p>
-          <input id="liveUrl" type="url"
-            placeholder="https://... video havolasi"
-            style="width:100%;padding:14px;border-radius:10px;background:#222;color:white;border:1px solid #66532f;">
-          <button class="gold-btn" onclick="playLive()">▶️ Efirni boshlash</button>
-          <p style="font-size:11px;color:#999;">
-            Faqat rasmiy yoki foydalanishga ruxsat berilgan video havolalaridan foydalaning.
+
+          <h3 id="liveChannelName">📺 UZMEDIA TV</h3>
+
+          <iframe id="liveFrame"
+            src="https://uz-media.uz/tv"
+            style="width:100%;height:420px;background:#000;border:0;border-radius:12px;"
+            allow="autoplay; fullscreen"
+            allowfullscreen>
+          </iframe>
+
+          <p id="liveStatus">UZMEDIA TV yuklanmoqda...</p>
+
+          <a id="liveExternalLink"
+            href="https://uz-media.uz/tv"
+            target="_blank" rel="noopener"
+            style="display:block;text-align:center;padding:14px;background:#d6b15e;color:#090909;border-radius:10px;text-decoration:none;font-weight:bold;">
+            ▶️ UZMEDIA TV ni alohida ochish
+          </a>
+
+          <p style="font-size:11px;color:#999;margin-top:12px;">
+            Efir mavjudligi kanal provayderiga bog‘liq.
           </p>
+
           <button class="gold-btn" onclick="openPage('home')">🏠 Bosh sahifa</button>
         </div>`;
     }
