@@ -53,10 +53,111 @@ async function refreshLiveMatches(targetId, limit = 0) {
             <div style="text-align:center;color:#999;font-size:11px;margin-top:10px;">
               ${escapeHTML(m.status || "Jonli")}
             </div>
+            <button class="gold-btn" style="width:100%;margin-top:12px;"
+              onclick="searchMatchStreams(this)"
+              data-home="${escapeHTML(m.home || "")}"
+              data-away="${escapeHTML(m.away || "")}">
+              🔴 Efir qidirish
+            </button>
+            <div class="stream-results" style="margin-top:12px;"></div>
           </div>
         `).join("");
     } catch (error) {
         target.innerHTML = "⚠️ O‘yinlarni yuklab bo‘lmadi. Qayta urinib ko‘ring.";
+    }
+}
+
+
+async function searchMatchStreams(button) {
+    const box = button.nextElementSibling;
+    if (!box) return;
+
+    button.disabled = true;
+    button.textContent = "🔎 Qidirilmoqda...";
+    box.textContent = "YouTube LIVE efirlari qidirilmoqda...";
+
+    try {
+        const params = new URLSearchParams({
+            home: button.dataset.home || "",
+            away: button.dataset.away || ""
+        });
+
+        const response = await fetch(
+            "https://khayitov-live-api.onrender.com/api/streams?" + params
+        );
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Server xatosi");
+        }
+
+        box.replaceChildren();
+
+        if (!data.streams || !data.streams.length) {
+            box.textContent = "😕 Hozircha mos jonli efir topilmadi.";
+            return;
+        }
+
+        const heading = document.createElement("div");
+        heading.textContent = "🔴 Topilgan YouTube LIVE efirlari:";
+        heading.style.cssText = "color:#d6b15e;margin-bottom:10px;";
+        box.appendChild(heading);
+
+        data.streams.forEach(stream => {
+            const item = document.createElement("div");
+            item.style.cssText =
+                "background:#202020;padding:10px;border-radius:10px;margin:8px 0;";
+
+            const title = document.createElement("div");
+            title.textContent = stream.title || "Jonli efir";
+            title.style.cssText = "font-size:13px;margin-bottom:5px;";
+
+            const channel = document.createElement("div");
+            channel.textContent = "📺 " + (stream.channel || "YouTube");
+            channel.style.cssText =
+                "font-size:11px;color:#aaa;margin-bottom:8px;";
+
+            const play = document.createElement("button");
+            play.className = "gold-btn";
+            play.textContent = "▶ Mini ilovada ko‘rish";
+            play.style.width = "100%";
+            play.dataset.videoId = stream.video_id || "";
+
+            play.addEventListener("click", () => {
+                const id = play.dataset.videoId;
+
+                if (!/^[A-Za-z0-9_-]{6,20}$/.test(id)) {
+                    channel.textContent = "⚠️ Video ID noto‘g‘ri.";
+                    return;
+                }
+
+                const oldPlayer = box.querySelector(".stream-player");
+                if (oldPlayer) oldPlayer.remove();
+
+                const player = document.createElement("iframe");
+                player.className = "stream-player";
+                player.src =
+                    "https://www.youtube-nocookie.com/embed/" +
+                    encodeURIComponent(id);
+                player.title = "YouTube LIVE";
+                player.allow =
+                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                player.allowFullscreen = true;
+                player.style.cssText =
+                    "width:100%;aspect-ratio:16/9;border:0;border-radius:10px;margin-top:12px;";
+
+                item.appendChild(player);
+            });
+
+            item.append(title, channel, play);
+            box.appendChild(item);
+        });
+
+    } catch (error) {
+        box.textContent = "⚠️ Efirlarni qidirishda xato: " + error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "🔴 Efir qidirish";
     }
 }
 
