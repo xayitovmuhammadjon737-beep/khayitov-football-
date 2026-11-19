@@ -416,6 +416,42 @@ async function loadMatchHighlights(button, home, away) {
     }
 }
 
+let currentNews = 0;
+
+const footballNews = [
+    {
+        title: "⚽ Futbol olamidagi so‘nggi yangiliklar",
+        description: "Dunyo futbolidagi eng muhim voqealar, jamoalar va futbolchilar haqidagi xabarlar shu bo‘limda joylashadi.",
+        image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=900"
+    },
+    {
+        title: "🏆 Chempionlar va katta uchrashuvlar",
+        description: "Sevimli jamoalaringiz, turnirlar va muhim uchrashuvlar haqidagi yangiliklarni KHAYITOV FOOTBALL orqali kuzatib boring.",
+        image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=900"
+    }
+];
+
+function showNews() {
+    const item = footballNews[currentNews];
+    const image = document.getElementById("newsImage");
+    const title = document.getElementById("newsTitle");
+    const description = document.getElementById("newsDescription");
+    const counter = document.getElementById("newsCounter");
+
+    if (!item || !image || !title || !description || !counter) return;
+
+    image.style.display = "block";
+    image.src = item.image;
+    title.textContent = item.title;
+    description.textContent = item.description;
+    counter.textContent = `${currentNews + 1} / ${footballNews.length}`;
+}
+
+function changeNews(direction) {
+    currentNews = (currentNews + direction + footballNews.length) % footballNews.length;
+    showNews();
+}
+
 function openPage(page) {
     if (liveRefreshTimer) clearInterval(liveRefreshTimer);
     console.log("KHAYITOV sahifa:", page);
@@ -454,11 +490,29 @@ function openPage(page) {
 
     if (page === "news") {
         content = `
-        <div class="match-card">
-          <h3>📰 Futbol olamidagi yangiliklar</h3>
-          <p>Yangiliklar lentasi uchun bepul ma'lumot manbasi keyingi bosqichda ulanadi.</p>
-          <button class="gold-btn" onclick="openPage('home')">Bosh sahifaga</button>
+        <div class="match-card" style="padding:15px;">
+          <h3 style="color:#d6b15e;text-align:center;margin-bottom:15px;">📰 FUTBOL YANGILIKLARI</h3>
+
+          <div id="newsSlide" style="background:#111;border:1px solid #66512b;border-radius:15px;overflow:hidden;">
+            <img id="newsImage" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=900"
+              style="width:100%;height:210px;object-fit:cover;display:block;"
+              onerror="this.style.display='none'">
+            <div style="padding:16px;">
+              <div id="newsTitle" style="font-size:19px;font-weight:bold;color:#f4d58b;margin-bottom:10px;"></div>
+              <p id="newsDescription" style="color:#ccc;line-height:1.6;font-size:14px;"></p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px;">
+            <button class="gold-btn" onclick="changeNews(-1)" style="flex:1;">← Orqaga</button>
+            <b id="newsCounter" style="color:#d6b15e;white-space:nowrap;">1 / 2</b>
+            <button class="gold-btn" onclick="changeNews(1)" style="flex:1;">Oldinga →</button>
+          </div>
+
+          <button class="gold-btn" onclick="openPage('home')" style="width:100%;margin-top:15px;">🏠 Bosh sahifaga</button>
         </div>`;
+
+        setTimeout(showNews, 0);
     }
 
     if (page === "scores") {
