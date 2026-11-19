@@ -417,19 +417,37 @@ async function loadMatchHighlights(button, home, away) {
 }
 
 let currentNews = 0;
+let footballNews = [];
 
-const footballNews = [
-    {
-        title: "⚽ Futbol olamidagi so‘nggi yangiliklar",
-        description: "Dunyo futbolidagi eng muhim voqealar, jamoalar va futbolchilar haqidagi xabarlar shu bo‘limda joylashadi.",
-        image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=900"
-    },
-    {
-        title: "🏆 Chempionlar va katta uchrashuvlar",
-        description: "Sevimli jamoalaringiz, turnirlar va muhim uchrashuvlar haqidagi yangiliklarni KHAYITOV FOOTBALL orqali kuzatib boring.",
-        image: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=900"
+async function loadFootballNews() {
+    const title = document.getElementById("newsTitle");
+    const description = document.getElementById("newsDescription");
+
+    if (title) title.textContent = "⏳ Yangiliklar yuklanmoqda...";
+    if (description) description.textContent = "UZA Sport yangiliklari olinmoqda...";
+
+    try {
+        const response = await fetch(
+            "https://khayitov-live-api.onrender.com/api/news",
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) throw new Error("API xatosi");
+
+        const data = await response.json();
+        footballNews = data.news || [];
+
+        if (!footballNews.length) throw new Error("Yangilik topilmadi");
+
+        currentNews = 0;
+        showNews();
+
+    } catch (error) {
+        if (title) title.textContent = "⚠️ Yangiliklarni yuklab bo‘lmadi";
+        if (description) description.textContent =
+            "Internetni tekshiring va qayta urinib ko‘ring.";
     }
-];
+}
 
 function showNews() {
     const item = footballNews[currentNews];
@@ -441,14 +459,22 @@ function showNews() {
     if (!item || !image || !title || !description || !counter) return;
 
     image.style.display = "block";
-    image.src = item.image;
+    image.src = item.image || "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=900";
+    image.onerror = function() {
+        this.src = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=900";
+    };
+
     title.textContent = item.title;
-    description.textContent = item.description;
+    description.textContent = item.description || "Batafsil ma’lumot mavjud emas.";
     counter.textContent = `${currentNews + 1} / ${footballNews.length}`;
 }
 
 function changeNews(direction) {
-    currentNews = (currentNews + direction + footballNews.length) % footballNews.length;
+    if (!footballNews.length) return;
+
+    currentNews =
+        (currentNews + direction + footballNews.length) % footballNews.length;
+
     showNews();
 }
 
@@ -505,14 +531,14 @@ function openPage(page) {
 
           <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px;">
             <button class="gold-btn" onclick="changeNews(-1)" style="flex:1;">← Orqaga</button>
-            <b id="newsCounter" style="color:#d6b15e;white-space:nowrap;">1 / 2</b>
+            <b id="newsCounter" style="color:#d6b15e;white-space:nowrap;">1 / 15</b>
             <button class="gold-btn" onclick="changeNews(1)" style="flex:1;">Oldinga →</button>
           </div>
 
           <button class="gold-btn" onclick="openPage('home')" style="width:100%;margin-top:15px;">🏠 Bosh sahifaga</button>
         </div>`;
 
-        setTimeout(showNews, 0);
+        setTimeout(loadFootballNews, 0);
     }
 
     if (page === "scores") {
