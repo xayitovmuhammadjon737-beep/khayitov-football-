@@ -289,7 +289,8 @@ async function loadMatchStats(button, fixtureId) {
     const box = button.parentElement.nextElementSibling;
     if (!box) return;
 
-    box.textContent = "⏳ Statistika yuklanmoqda...";
+    box.innerHTML = `<div style="padding:18px;text-align:center;color:#d6b15e;">⏳ Statistika tahlil qilinmoqda...</div>`;
+
     try {
         const response = await fetch(
             `https://khayitov-live-api.onrender.com/api/statistics?fixture=${decodeURIComponent(fixtureId)}`
@@ -300,23 +301,81 @@ async function loadMatchStats(button, fixtureId) {
         const teams = data.statistics || [];
 
         if (!teams.length) {
-            box.textContent = "Bu uchrashuv uchun statistika mavjud emas.";
+            box.innerHTML = `<div style="padding:18px;background:#202020;border-radius:12px;text-align:center;color:#aaa;">📊 Bu uchrashuv statistikasi mavjud emas.</div>`;
             return;
         }
 
-        box.innerHTML = teams.map(team => `
-          <div style="background:#202020;padding:10px;border-radius:9px;margin-top:8px;">
-            <strong>${escapeHTML(team.team?.name || "Jamoa")}</strong>
-            ${(team.statistics || []).map(stat => `
-              <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-top:6px;">
-                <span style="color:#bbb;">${escapeHTML(stat.type || "")}</span>
-                <b>${escapeHTML(stat.value ?? "-")}</b>
-              </div>
-            `).join("")}
-          </div>
-        `).join("");
+        const names = teams.map(t => escapeHTML(t.team?.name || "Jamoa"));
+        const stats = teams.map(t => {
+            const result = {};
+            (t.statistics || []).forEach(item => {
+                if (item.value !== null && item.value !== undefined && item.value !== "") {
+                    result[item.type] = item.value;
+                }
+            });
+            return result;
+        });
+
+        const definitions = [
+            ["Ball Possession", "To‘p nazorati", "%", "📊"],
+            ["Total Shots", "Jami zarbalar", "", "⚽"],
+            ["Shots on Goal", "Darvozaga aniq zarbalar", "", "🎯"],
+            ["Shots off Goal", "Noaniq zarbalar", "", "🥅"],
+            ["Blocked Shots", "To‘sib qolingan zarbalar", "", "🛡️"],
+            ["Corner Kicks", "Burchak zarbalari", "", "🚩"],
+            ["Fouls", "Qoidabuzarliklar", "", "⚠️"],
+            ["Offsides", "O‘yindan tashqari holat", "", "🚩"],
+            ["Yellow Cards", "Sariq kartochkalar", "", "🟨"],
+            ["Red Cards", "Qizil kartochkalar", "", "🟥"],
+            ["Goalkeeper Saves", "Darvozabon seyvlar", "", "🧤"],
+            ["Total passes", "Jami paslar", "", "🔄"],
+            ["Passes accurate", "Aniq paslar", "", "🎯"],
+            ["Passes %", "Paslar aniqligi", "%", "📈"],
+            ["expected_goals", "Kutilgan gollar (xG)", "", "⚽"],
+            ["goals_prevented", "Oldi olingan gollar", "", "🧤"]
+        ];
+
+        const rows = definitions.map(([key, label, unit, emoji]) => {
+            const a = stats[0][key];
+            const b = stats[1][key];
+            if (a === undefined && b === undefined) return "";
+
+            const num = value => parseFloat(String(value).replace("%", "")) || 0;
+            const av = num(a);
+            const bv = num(b);
+            const total = av + bv;
+            const ap = total ? av / total * 100 : 50;
+            const bp = total ? bv / total * 100 : 50;
+
+            return `
+              <div style="padding:13px 10px;border-bottom:1px solid #303030;">
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+                  <b style="color:#f4d58b;">${a === undefined ? "—" : escapeHTML(a)}</b>
+                  <span style="color:#bbb;text-align:center;">${emoji} ${label}</span>
+                  <b style="color:#f4d58b;">${b === undefined ? "—" : escapeHTML(b)}</b>
+                </div>
+                <div style="display:flex;gap:4px;margin-top:9px;height:6px;">
+                  <div style="width:${a === undefined ? 0 : ap}%;background:#d6b15e;border-radius:8px;"></div>
+                  <div style="width:${b === undefined ? 0 : bp}%;background:#777;border-radius:8px;"></div>
+                </div>
+              </div>`;
+        }).join("");
+
+        box.innerHTML = `
+          <div style="margin-top:14px;background:linear-gradient(145deg,#191919,#101010);border:1px solid #66512b;border-radius:15px;overflow:hidden;">
+            <div style="padding:16px;background:linear-gradient(90deg,#302516,#171717);text-align:center;">
+              <div style="font-size:11px;letter-spacing:2px;color:#d6b15e;">KHAYITOV PREMIUM</div>
+              <h3 style="margin:7px 0;color:#fff;">📊 O‘YIN STATISTIKASI</h3>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;text-align:center;padding:14px 8px;gap:8px;">
+              <div style="color:#f4d58b;font-weight:bold;">${names[0] || "Jamoa 1"}</div>
+              <div style="color:#ddd;font-weight:bold;">${names[1] || "Jamoa 2"}</div>
+            </div>
+            ${rows || `<p style="padding:15px;text-align:center;color:#aaa;">Ko‘rsatish uchun statistika topilmadi.</p>`}
+            <div style="padding:12px;text-align:center;color:#777;font-size:10px;">MA’LUMOTLAR API-FOOTBALL MANBASIDAN</div>
+          </div>`;
     } catch (error) {
-        box.textContent = "⚠️ Statistikani yuklab bo‘lmadi.";
+        box.innerHTML = `<div style="padding:15px;color:#ff7777;">⚠️ Statistikani yuklab bo‘lmadi.</div>`;
     }
 }
 
