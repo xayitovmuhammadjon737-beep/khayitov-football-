@@ -220,6 +220,143 @@ function home() {
     startLiveRefresh("matches", 3);
 }
 
+
+
+async function loadResults() {
+    const target = document.getElementById("resultsList");
+    const dateInput = document.getElementById("resultsDate");
+    if (!target || !dateInput) return;
+
+    const date = dateInput.value;
+    if (!date) {
+        target.textContent = "Sanani tanlang.";
+        return;
+    }
+
+    target.textContent = "⏳ Natijalar yuklanmoqda...";
+
+    try {
+        const response = await fetch(
+            `https://khayitov-live-api.onrender.com/api/results?date=${encodeURIComponent(date)}`,
+            { cache: "no-store" }
+        );
+        if (!response.ok) throw new Error("Server xatosi");
+
+        const data = await response.json();
+        const matches = data.matches || [];
+
+        if (!matches.length) {
+            target.textContent = "Bu sanada tugagan uchrashuvlar topilmadi.";
+            return;
+        }
+
+        target.innerHTML = matches.map(m => `
+          <div style="background:#151515;border:1px solid #333;border-radius:13px;padding:13px;margin:10px 0;">
+            <div style="color:#d6b15e;font-size:11px;text-align:center;">
+              ${escapeHTML(m.country || "")} · ${escapeHTML(m.league || "")}
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:12px;">
+              <div style="flex:1;text-align:center;">
+                <img src="${escapeHTML(m.home_logo || "")}" style="width:35px;height:35px;object-fit:contain;" onerror="this.style.display='none'">
+                <div style="font-size:12px;">${escapeHTML(m.home || "")}</div>
+              </div>
+              <strong style="font-size:23px;white-space:nowrap;">
+                ${m.home_score ?? "-"} : ${m.away_score ?? "-"}
+              </strong>
+              <div style="flex:1;text-align:center;">
+                <img src="${escapeHTML(m.away_logo || "")}" style="width:35px;height:35px;object-fit:contain;" onerror="this.style.display='none'">
+                <div style="font-size:12px;">${escapeHTML(m.away || "")}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:7px;margin-top:12px;">
+              <button class="gold-btn" style="flex:1;"
+                onclick="loadMatchStats(this, '${encodeURIComponent(String(m.id))}')">📊 Statistika</button>
+              <button class="gold-btn" style="flex:1;"
+                onclick="loadMatchHighlights(this, '${encodeURIComponent(m.home || "")}', '${encodeURIComponent(m.away || "")}')">🎬 Sharh</button>
+            </div>
+            <div class="match-extra" style="margin-top:10px;"></div>
+          </div>
+        `).join("");
+
+        target.insertAdjacentHTML("afterbegin",
+            `<p style="color:#aaa;font-size:12px;">${matches.length} ta tugagan uchrashuv topildi.</p>`);
+    } catch (error) {
+        target.textContent = "⚠️ Natijalarni yuklab bo‘lmadi. Birozdan keyin qayta urinib ko‘ring.";
+    }
+}
+
+async function loadMatchStats(button, fixtureId) {
+    const box = button.parentElement.nextElementSibling;
+    if (!box) return;
+
+    box.textContent = "⏳ Statistika yuklanmoqda...";
+    try {
+        const response = await fetch(
+            `https://khayitov-live-api.onrender.com/api/statistics?fixture=${decodeURIComponent(fixtureId)}`
+        );
+        if (!response.ok) throw new Error("API xatosi");
+
+        const data = await response.json();
+        const teams = data.statistics || [];
+
+        if (!teams.length) {
+            box.textContent = "Bu uchrashuv uchun statistika mavjud emas.";
+            return;
+        }
+
+        box.innerHTML = teams.map(team => `
+          <div style="background:#202020;padding:10px;border-radius:9px;margin-top:8px;">
+            <strong>${escapeHTML(team.team?.name || "Jamoa")}</strong>
+            ${(team.statistics || []).map(stat => `
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-top:6px;">
+                <span style="color:#bbb;">${escapeHTML(stat.type || "")}</span>
+                <b>${escapeHTML(stat.value ?? "-")}</b>
+              </div>
+            `).join("")}
+          </div>
+        `).join("");
+    } catch (error) {
+        box.textContent = "⚠️ Statistikani yuklab bo‘lmadi.";
+    }
+}
+
+async function loadMatchHighlights(button, home, away) {
+    const box = button.parentElement.nextElementSibling;
+    if (!box) return;
+
+    box.textContent = "🔎 YouTube sharhlari qidirilmoqda...";
+    try {
+        const params = new URLSearchParams({
+            home: decodeURIComponent(home),
+            away: decodeURIComponent(away)
+        });
+        const response = await fetch(
+            `https://khayitov-live-api.onrender.com/api/highlights?${params}`
+        );
+        if (!response.ok) throw new Error("API xatosi");
+
+        const data = await response.json();
+        const videos = data.videos || [];
+
+        if (!videos.length) {
+            box.textContent = "Bu uchrashuv uchun video topilmadi.";
+            return;
+        }
+
+        box.innerHTML = videos.map(video => `
+          <div style="margin-top:10px;background:#202020;padding:10px;border-radius:9px;">
+            <div style="font-size:13px;margin-bottom:8px;">${escapeHTML(video.title || "Video")}</div>
+            <div style="font-size:11px;color:#aaa;margin-bottom:8px;">${escapeHTML(video.channel || "YouTube")}</div>
+            <iframe src="https://www.youtube.com/embed/${encodeURIComponent(video.video_id || "")}"
+              style="width:100%;aspect-ratio:16/9;border:0;border-radius:8px;"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+        `).join("");
+    } catch (error) {
+        box.textContent = "⚠️ Videolarni yuklab bo‘lmadi.";
+    }
+}
+
 function openPage(page) {
     if (liveRefreshTimer) clearInterval(liveRefreshTimer);
     console.log("KHAYITOV sahifa:", page);
@@ -269,9 +406,14 @@ function openPage(page) {
         content = `
         <div class="match-card">
           <h3>⚽ O‘yin natijalari</h3>
-          <p>Jonli, bugungi, tugagan va kelgusi o‘yinlar.</p>
-          <p class="gold">Natijalar manbasi keyingi bosqichda ulanadi.</p>
-          <button class="gold-btn" onclick="openPage('home')">Bosh sahifaga</button>
+          <p style="color:#aaa;margin:10px 0;">Tugagan uchrashuvlarni sana bo‘yicha ko‘ring.</p>
+          <input id="resultsDate" type="date"
+            value="${new Date().toLocaleDateString('en-CA')}"
+            style="width:100%;padding:12px;border-radius:9px;background:#151515;color:white;border:1px solid #555;">
+          <button class="gold-btn" style="width:100%;margin-top:10px;"
+            onclick="loadResults()">🔎 Natijalarni ko‘rish</button>
+          <div id="resultsList" style="margin-top:15px;">⚽ Natijalar yuklanmoqda...</div>
+          <button class="gold-btn" onclick="openPage('home')">🏠 Bosh sahifaga</button>
         </div>`;
     }
 
@@ -308,6 +450,7 @@ function openPage(page) {
       </div>
       ${content}`;
     if (page === "live") startLiveRefresh("liveMatches");
+    if (page === "scores") loadResults();
 }
 
 function startQuiz() {
