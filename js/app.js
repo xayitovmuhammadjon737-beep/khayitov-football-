@@ -305,39 +305,26 @@ async function loadMatchStats(button, fixtureId) {
             return;
         }
 
-        const names = teams.map(t => escapeHTML(t.team?.name || "Jamoa"));
-        const stats = teams.map(t => {
-            const result = {};
-            (t.statistics || []).forEach(item => {
-                if (item.value !== null && item.value !== undefined && item.value !== "") {
-                    result[item.type] = item.value;
-                }
-            });
-            return result;
-        });
+        const names = ["Uy jamoasi", "Mehmon jamoa"];
+        const stats = teams.map(item => ({
+            [item.label]: item.home
+        }));
+
+        const awayStats = teams.map(item => ({
+            [item.label]: item.away
+        }));
 
         const definitions = [
             ["Ball Possession", "To‘p nazorati", "%", "📊"],
-            ["Total Shots", "Jami zarbalar", "", "⚽"],
-            ["Shots on Goal", "Darvozaga aniq zarbalar", "", "🎯"],
-            ["Shots off Goal", "Noaniq zarbalar", "", "🥅"],
-            ["Blocked Shots", "To‘sib qolingan zarbalar", "", "🛡️"],
-            ["Corner Kicks", "Burchak zarbalari", "", "🚩"],
-            ["Fouls", "Qoidabuzarliklar", "", "⚠️"],
-            ["Offsides", "O‘yindan tashqari holat", "", "🚩"],
-            ["Yellow Cards", "Sariq kartochkalar", "", "🟨"],
-            ["Red Cards", "Qizil kartochkalar", "", "🟥"],
-            ["Goalkeeper Saves", "Darvozabon seyvlar", "", "🧤"],
-            ["Total passes", "Jami paslar", "", "🔄"],
-            ["Passes accurate", "Aniq paslar", "", "🎯"],
-            ["Passes %", "Paslar aniqligi", "%", "📈"],
-            ["expected_goals", "Kutilgan gollar (xG)", "", "⚽"],
-            ["goals_prevented", "Oldi olingan gollar", "", "🧤"]
+            ["Shots on Target", "Darvozaga aniq zarbalar", "", "🎯"],
+            ["Shots off Target", "Noaniq zarbalar", "", "🥅"],
+            ["Attacks", "Hujumlar", "", "⚽"],
+            ["Dangerous Attacks", "Xavfli hujumlar", "", "🔥"]
         ];
 
         const rows = definitions.map(([key, label, unit, emoji]) => {
-            const a = stats[0][key];
-            const b = stats[1][key];
+            const a = stats.find(item => item[key] !== undefined)?.[key];
+            const b = awayStats.find(item => item[key] !== undefined)?.[key];
             if (a === undefined && b === undefined) return "";
 
             const num = value => parseFloat(String(value).replace("%", "")) || 0;
@@ -372,7 +359,7 @@ async function loadMatchStats(button, fixtureId) {
               <div style="color:#ddd;font-weight:bold;">${names[1] || "Jamoa 2"}</div>
             </div>
             ${rows || `<p style="padding:15px;text-align:center;color:#aaa;">Ko‘rsatish uchun statistika topilmadi.</p>`}
-            <div style="padding:12px;text-align:center;color:#777;font-size:10px;">MA’LUMOTLAR API-FOOTBALL MANBASIDAN</div>
+            <div style="padding:12px;text-align:center;color:#777;font-size:10px;">MA’LUMOTLAR SPORTScore MANBASIDAN</div>
           </div>`;
     } catch (error) {
         box.innerHTML = `<div style="padding:15px;color:#ff7777;">⚠️ Statistikani yuklab bo‘lmadi.</div>`;
